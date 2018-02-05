@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 /*----------TO-DO-----------
 //tokenize input
 //figureout wtf to do
@@ -16,13 +17,41 @@
 
 
 
+void historyController(char *history[], int histInd, char* token){
+	int ind;
+	token = strtok(NULL, " ");
 
+	if (token != NULL){
+		printf("token is not null\n");
+	
+		if (strncmp(token, "-c", 1) == 0){
+			printf("clearing history\n");
+		}	
+		else if (isdigit(token[0])){
+			ind = atoi(token);
+			printf("executing history cmd: %d\n", ind);
+		}
+		else{
+			printf("not a valid modifier\n");
+		}		
+		//else not a valid modifier (error handler)
+	}		
+	else{
+		printf("token is null\n");
+		int i;
+		for(i = 0; i < histInd; i++){
+			printf("%d %s",i, history[i]);
+		}
+	}
+	printf("leaving function\n");	
+}
 
 int main(void){
 	
 	char buffer[2048];
 	memset(buffer,0,sizeof(buffer));
 	char *history[100];
+	memset(history, 0, sizeof(history));
 	int histInd = 0;
 
 	char *token;
@@ -44,17 +73,21 @@ int main(void){
 		histInd = histInd % 100;
 		
 		//tokenizing input
-		token = strtok(buffer, " ");	
-		while (token != NULL){
-			printf("%s\n", token);
-			token = strtok(NULL, " ");
-		}
+		token = strtok(buffer, " ");
+		if (strncmp(token, "history", 6)==0){
+			printf("inside history if block\n");
+			historyController(history, histInd, token);		
+		}	
+	//	while (token != NULL){
+//			printf("%s\n", token);
+//			token = strtok(NULL, " ");
+//		}
 		
 	}while(strncmp(buffer, "exit", 4) != 0);
-	int i;
-	for(i = 0; i < histInd; i++){
-		printf("%d %s",i, history[i]);
-	}
+//	int i;
+//	for(i = 0; i < histInd; i++){
+//		printf("%d %s",i, history[i]);
+//	}
 	
 	return 0;
 	

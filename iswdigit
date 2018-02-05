@@ -1,0 +1,119 @@
+ISALPHA(3)                 Linux Programmer's Manual                ISALPHA(3)
+
+
+
+NNAAMMEE
+       isalnum, isalpha, isascii, isblank, iscntrl, isdigit, isgraph, islower,
+       isprint, ispunct, isspace, isupper, isxdigit - character classification
+       routines
+
+SSYYNNOOPPSSIISS
+       ##iinncclluuddee <<ccttyyppee..hh>>
+
+       iinntt iissaallnnuumm((iinntt _c));;
+       iinntt iissaallpphhaa((iinntt _c));;
+       iinntt iissaasscciiii((iinntt _c));;
+       iinntt iissbbllaannkk((iinntt _c));;
+       iinntt iissccnnttrrll((iinntt _c));;
+       iinntt iissddiiggiitt((iinntt _c));;
+       iinntt iissggrraapphh((iinntt _c));;
+       iinntt iisslloowweerr((iinntt _c));;
+       iinntt iisspprriinntt((iinntt _c));;
+       iinntt iissppuunncctt((iinntt _c));;
+       iinntt iissssppaaccee((iinntt _c));;
+       iinntt iissuuppppeerr((iinntt _c));;
+       iinntt iissxxddiiggiitt((iinntt _c));;
+
+   Feature Test Macro Requirements for glibc (see ffeeaattuurree__tteesstt__mmaaccrrooss(7)):
+
+       iissaasscciiii():
+           _BSD_SOURCE || _SVID_SOURCE || _XOPEN_SOURCE
+       iissbbllaannkk():
+           _XOPEN_SOURCE >= 600 || _ISOC99_SOURCE ||
+           _POSIX_C_SOURCE >= 200112L;
+           or _c_c _-_s_t_d_=_c_9_9
+
+DDEESSCCRRIIPPTTIIOONN
+       These functions check whether _c,  which  must  have  the  value  of  an
+       _u_n_s_i_g_n_e_d _c_h_a_r or EEOOFF, falls into a certain character class according to
+       the current locale.
+
+       iissaallnnuumm()
+              checks for an alphanumeric character; it is equivalent to ((iissaall‐‐
+              pphhaa((_c)) |||| iissddiiggiitt((_c)))).
+
+       iissaallpphhaa()
+              checks  for an alphabetic character; in the standard ""CC"" locale,
+              it  is  equivalent  to  ((iissuuppppeerr((_c))  ||||  iisslloowweerr((_c)))).   In  some
+              locales,  there may be additional characters for which iissaallpphhaa()
+              is true—letters which are neither upper case nor lower case.
+
+       iissaasscciiii()
+              checks whether _c is a 7-bit _u_n_s_i_g_n_e_d _c_h_a_r value that  fits  into
+              the ASCII character set.
+
+       iissbbllaannkk()
+              checks for a blank character; that is, a space or a tab.
+
+       iissccnnttrrll()
+              checks for a control character.
+
+       iissddiiggiitt()
+              checks for a digit (0 through 9).
+
+       iissggrraapphh()
+              checks for any printable character except space.
+
+       iisslloowweerr()
+              checks for a lower-case character.
+
+       iisspprriinntt()
+              checks for any printable character including space.
+
+       iissppuunncctt()
+              checks  for  any  printable character which is not a space or an
+              alphanumeric character.
+
+       iissssppaaccee()
+              checks for white-space  characters.   In  the  ""CC""  and  ""PPOOSSIIXX""
+              locales,  these  are:  space,  form-feed (''\\ff''), newline (''\\nn''),
+              carriage return (''\\rr''), horizontal tab (''\\tt''), and vertical  tab
+              (''\\vv'').
+
+       iissuuppppeerr()
+              checks for an uppercase letter.
+
+       iissxxddiiggiitt()
+              checks for a hexadecimal digits, that is, one of
+              00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff AA BB CC DD EE FF.
+
+RREETTUURRNN VVAALLUUEE
+       The  values  returned  are  nonzero  if  the character _c falls into the
+       tested class, and a zero value if not.
+
+CCOONNFFOORRMMIINNGG TTOO
+       C99, 4.3BSD.  C89 specifies all of these functions except iissaasscciiii() and
+       iissbbllaannkk().  iissaasscciiii() is a BSD extension and is also an SVr4 extension.
+       iissbbllaannkk() conforms to POSIX.1-2001 and C99 7.4.1.3.  POSIX.1-2008 marks
+       iissaasscciiii()  as  obsolete,  noting  that  it cannot be used portably in a
+       localized application.
+
+NNOOTTEESS
+       The details of what characters belong into which class  depend  on  the
+       current  locale.  For example, iissuuppppeerr() will not recognize an A-umlaut
+       (Ä) as an uppercase letter in the default CC locale.
+
+SSEEEE AALLSSOO
+       iisswwaallnnuumm(3), iisswwaallpphhaa(3), iisswwbbllaannkk(3), iisswwccnnttrrll(3),  iisswwddiiggiitt(3),  iissww‐‐
+       ggrraapphh(3),  iisswwlloowweerr(3),  iisswwpprriinntt(3),  iisswwppuunncctt(3), iisswwssppaaccee(3), iisswwuupp‐‐
+       ppeerr(3), iisswwxxddiiggiitt(3), sseettllooccaallee(3), ttooaasscciiii(3), ttoolloowweerr(3), ttoouuppppeerr(3),
+       aasscciiii(7), llooccaallee(7)
+
+CCOOLLOOPPHHOONN
+       This  page  is  part of release 3.54 of the Linux _m_a_n_-_p_a_g_e_s project.  A
+       description of the project, and information about reporting  bugs,  can
+       be found at http://www.kernel.org/doc/man-pages/.
+
+
+
+GNU                               2010-09-20                        ISALPHA(3)
