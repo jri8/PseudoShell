@@ -24,11 +24,11 @@ void historyController(char *history[], int *haddr, char* token, bool *waddr){
 	token = strtok(NULL, " ");
 
 	if (token != NULL){
-		printf("token is not null\n");
+//		printf("token is not null\n");
 		
 		//clears history	
 		if (strncmp(token, "-c", 1) == 0){
-			printf("clearing history\n");
+//			printf("clearing history\n");
 			
 			memset(history, 0, sizeof(history));
 			*haddr = 0;
@@ -37,7 +37,7 @@ void historyController(char *history[], int *haddr, char* token, bool *waddr){
 		//executes command at target index from history
 		else if (isdigit(token[0])){
 			cmdInd = atoi(token);
-			printf("executing history cmd: %d\n", cmdInd);
+//			printf("executing history cmd: %d\n", cmdInd);
 		}
 		//not a valid modifier
 		else{
@@ -46,7 +46,7 @@ void historyController(char *history[], int *haddr, char* token, bool *waddr){
 	}
 	//if not extra arguments print history		
 	else{
-		printf("token is null\n");
+//		printf("token is null\n");
 		int i;
 		if (hasWrapped == false){
 			for(i = 0; i < histInd; i++){
@@ -61,8 +61,41 @@ void historyController(char *history[], int *haddr, char* token, bool *waddr){
 			}	
 		}
 	}
-	printf("leaving function\n");	
+//	printf("leaving function\n");	
 }
+
+void executeProg(char* ex ){
+
+	//if the input is a file to execute then call this function
+	//need to pass in the name of the program, any extra tokens
+
+	//first thing to do is to check for "|", ";", "<", ">" "&" in tokens
+	//next fork one or multiple sub processes
+	//based upon extra parameters provide different functionality
+	
+	//basic framework of fork() from HW2, simpleProccess.c
+	pid_t pid = fork();
+/*	if (pid==0){
+		char *cmd[]={argv[1], argv[2], NULL};
+//		printf("if statement\n");
+		int val = execv(cmd[0],cmd);
+		if (val == -1)
+			exit(1);
+	}		
+	else if (pid > 0){
+		waitpid(pid,0,0);
+		
+	}
+	else{
+		printf("error\n");
+	}*/	
+
+}
+
+
+
+
+
 
 int main(void){
 	
@@ -104,9 +137,18 @@ int main(void){
 		//tokenizing input
 		token = strtok(buffer, " ");
 		if (strncmp(token, "history", 6)==0){
-			printf("inside history if block\n");
+			printf("input is history\n");
 			historyController(history, &histInd, token, &hasWrapped);		
 		}
+		else if(strncmp(token, "cd", 1) == 0){
+			printf("input is cd\n");
+
+		}
+		else{
+			printf("input is not history, cd, or exit\n");	
+		}
+
+
 	
 	}while(strncmp(buffer, "exit", 4) != 0);
 
