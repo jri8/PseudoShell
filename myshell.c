@@ -5,13 +5,13 @@
 #include <ctype.h>
 #include <stdbool.h>
 /*----------TO-DO-----------
-//tokenize input
-//figureout wtf to do
-//fork()
+//add parse input function based on description below
+//finish execute program function so it works when passed in one program
+//implement functionality for history [offset] (should just call parse input)
 //manage stdin/out/err
-//execve
-//make other files with code to execute given commands
-//(exit, cd, history)
+//add functionality for redirect
+//add functionality for pipes
+//add functionality for & and ;
 //error messages
 ------------TO-DO----------*/
 
@@ -92,7 +92,17 @@ void executeProg(char* ex ){
 
 }
 
-
+//parseInput Function
+//passed in the buffer from main
+//buffer then parsed and proper funcions called
+//this will be useful when calling functions from history
+//this will handle the input  checks aswell
+//  if history than call history controller
+//  if cd then change directory, might have to be static variable
+//  if an executable then call executeprog (which then forks a process
+//  if exit then return -1
+//should return -1 if the input is exit which will trigger main to return 0
+//otherwise it will return 0 and 
 
 
 
@@ -144,9 +154,13 @@ int main(void){
 			printf("input is cd\n");
 
 		}
-		else{
+		else if (strncmp(token, "exit", 3) != 0){
 			printf("input is not history, cd, or exit\n");	
 		}
+		else{
+			printf("input is exit\n");
+		}
+
 
 
 	
