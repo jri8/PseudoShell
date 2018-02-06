@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdbool.h>
 /*----------TO-DO-----------
 //tokenize input
 //figureout wtf to do
@@ -14,33 +15,50 @@
 //error messages
 ------------TO-DO----------*/
 
+const int MAX_HISTORY = 100;
 
-
-
-void historyController(char *history[], int histInd, char* token){
-	int ind;
+void historyController(char *history[], int *haddr, char* token, bool *waddr){
+	int histInd = (*haddr);
+	int cmdInd;
+	bool hasWrapped = (*waddr);
 	token = strtok(NULL, " ");
 
 	if (token != NULL){
 		printf("token is not null\n");
-	
+		
+		//clears history	
 		if (strncmp(token, "-c", 1) == 0){
 			printf("clearing history\n");
+			
+			memset(history, 0, sizeof(history));
+			*haddr = 0;
+			*waddr = false;
 		}	
+		//executes command at target index from history
 		else if (isdigit(token[0])){
-			ind = atoi(token);
-			printf("executing history cmd: %d\n", ind);
+			cmdInd = atoi(token);
+			printf("executing history cmd: %d\n", cmdInd);
 		}
+		//not a valid modifier
 		else{
 			printf("not a valid modifier\n");
 		}		
-		//else not a valid modifier (error handler)
-	}		
+	}
+	//if not extra arguments print history		
 	else{
 		printf("token is null\n");
 		int i;
-		for(i = 0; i < histInd; i++){
-			printf("%d %s",i, history[i]);
+		if (hasWrapped == false){
+			for(i = 0; i < histInd; i++){
+				printf("%d %s",i, history[i]);
+			}
+		}
+		else{
+			int j;
+			for(i = 0; i < MAX_HISTORY; i++){
+				j = (histInd + i) % MAX_HISTORY;
+				printf("%d %s", i, history[j]);
+			}	
 		}
 	}
 	printf("leaving function\n");	
@@ -48,14 +66,19 @@ void historyController(char *history[], int histInd, char* token){
 
 int main(void){
 	
+	//input buffer		
 	char buffer[2048];
 	memset(buffer,0,sizeof(buffer));
-	char *history[100];
+	
+	//history
+	char *history[MAX_HISTORY];
 	memset(history, 0, sizeof(history));
 	int histInd = 0;
+	bool hasWrapped = false;
 
+	//tokenizer
 	char *token;
-	//use circular array to keep track of history
+
 	do{
 		//displaying prompt
 		printf("$");
@@ -66,33 +89,28 @@ int main(void){
 		//allocating space in array for history
 		free(history[histInd]); 
 		history[histInd] = malloc(strlen(buffer)+1);
+	
 		//copies buffer into history array
 		strcpy(history[histInd], buffer);
+
 		//maintaining index
 		histInd++;
-		histInd = histInd % 100;
+		if (histInd >= MAX_HISTORY){
+			//checks if circular arr wrapped back
+			hasWrapped = true;
+		}
+		histInd = histInd % MAX_HISTORY;
 		
 		//tokenizing input
 		token = strtok(buffer, " ");
 		if (strncmp(token, "history", 6)==0){
 			printf("inside history if block\n");
-			historyController(history, histInd, token);		
-		}	
-	//	while (token != NULL){
-//			printf("%s\n", token);
-//			token = strtok(NULL, " ");
-//		}
-		
-	}while(strncmp(buffer, "exit", 4) != 0);
-//	int i;
-//	for(i = 0; i < histInd; i++){
-//		printf("%d %s",i, history[i]);
-//	}
+			historyController(history, &histInd, token, &hasWrapped);		
+		}
 	
+	}while(strncmp(buffer, "exit", 4) != 0);
+
 	return 0;
 	
 }
 
-
-
-// Testing commit (Greg)
