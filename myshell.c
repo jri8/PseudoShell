@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <unistd.h>
+#include <sys/types.h>
 /*----------TO-DO-----------
 //finish execute program function so it works when passed in one program
 //implement functionality for history [offset] (should just call parse input)
@@ -63,7 +65,7 @@ void historyController(char *history[], int *haddr, char* token, bool *waddr){
 //	printf("leaving function\n");	
 }
 
-void executeProg(char* ex ){
+void executeProg(char* token){
 
 	//if the input is a file to execute then call this function
 	//need to pass in the name of the program, any extra tokens
@@ -73,21 +75,54 @@ void executeProg(char* ex ){
 	//based upon extra parameters provide different functionality
 	
 	//basic framework of fork() from HW2, simpleProccess.c
+	char *ex = token;
+	printf("in execProg\n");
+	printf("%s\n", token);
+	
+	//other = strtok(NULL, " ");
+	token = strtok(NULL, " ");
+	while (token != NULL){
+		if(strncmp(token, "|", 1) == 0){
+			printf("pipe\n");
+		} 
+		else if(strncmp(token, ";", 1) == 0){
+			printf("run second program\n");
+		}
+		else if (strncmp(token, "<", 1) == 0){
+			printf("redirect in?\n");
+		}
+		else if (strncmp(token, ">", 1) == 0){
+			printf("redirect out\n");
+		}
+		else if (strncmp(token, "&", 1) == 0){
+			printf("send process to background\n");
+		}
+		else{
+			printf("%s\n", token);
+		}
+		token = strtok(NULL, " ");
+	}
+
 	pid_t pid = fork();
-/*	if (pid==0){
-		char *cmd[]={argv[1], argv[2], NULL};
-//		printf("if statement\n");
+	if (pid==0){
+		printf("child executing\n");
+		char *cmd[]={ex, NULL};
+		
 		int val = execv(cmd[0],cmd);
-		if (val == -1)
+		if (val == -1){
+			printf("error with execv\n");
 			exit(1);
+		}
 	}		
 	else if (pid > 0){
+		printf("parent waiting for child\n");
 		waitpid(pid,0,0);
+		printf("parent done waiting\n");
 		
 	}
 	else{
 		printf("error\n");
-	}*/	
+	}	
 
 }
 
@@ -118,6 +153,7 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
 	}
 	else if (strncmp(token, "exit", 3) != 0){
 		printf("input is not history, cd, or exit\n");	
+		executeProg(token);
 	}
 	else{
 		printf("input is exit\n");
