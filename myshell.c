@@ -102,6 +102,8 @@ void executeProg(char* token){
 		}
 		token = strtok(NULL, " ");
 	}
+	
+	ex = strtok(ex, "\n");
 
 	pid_t pid = fork();
 	if (pid==0){
@@ -157,10 +159,12 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
 	}
 	else{
 		printf("input is exit\n");
+		return -1;
 	}
 	
 //	printf("inside parse input \n");
 //	printf("%s\n", input);
+	return 0;
 }
 
 int main(void){
@@ -177,6 +181,8 @@ int main(void){
 
 	//tokenizer
 	char *token;
+
+	int parseVal = 0;
 
 
 	do{
@@ -202,10 +208,10 @@ int main(void){
 		}
 		histInd = histInd % MAX_HISTORY;
 			
-		parseInput(buffer, history, &histInd, token, &hasWrapped);
+		parseVal = parseInput(buffer, history, &histInd, token, &hasWrapped);
 			
 		//tokenizing input
-		}while(strncmp(buffer, "exit", 4) != 0);
+		}while(parseVal >= 0);
 
 	return 0;
 	
