@@ -75,18 +75,37 @@ void executeProg(char* token){
 	//based upon extra parameters provide different functionality
 	
 	//basic framework of fork() from HW2, simpleProccess.c
-	char *ex = token;
-	printf("in execProg\n");
-	printf("%s\n", token);
+	char *progs[100];
+	int execs = 0;
+	progs[execs] = malloc(strlen(token)+1);
+	progs[execs] = token;
+	execs++;
 	
-	//other = strtok(NULL, " ");
+	bool sendBack = false;
+//	printf("in execProg\n");
+//	printf("%s\n", progs[0]);
+
+	int mypipe[2];
+	if (pipe(mypipe)){
+		printf("pipe failed\n");
+	}	
+	
 	token = strtok(NULL, " ");
 	while (token != NULL){
 		if(strncmp(token, "|", 1) == 0){
 			printf("pipe\n");
+			token = strtok(NULL, " ");
+			progs[execs] = malloc(strlen(token)+1);
+			progs[execs] = token;
+			execs++;
 		} 
 		else if(strncmp(token, ";", 1) == 0){
-			printf("run second program\n");
+//			printf("run second program\n");
+			token = strtok(NULL, " ");
+			progs[execs] = malloc(strlen(token)+1);
+			progs[execs] = token;
+			execs++;
+			
 		}
 		else if (strncmp(token, "<", 1) == 0){
 			printf("redirect in?\n");
@@ -96,6 +115,7 @@ void executeProg(char* token){
 		}
 		else if (strncmp(token, "&", 1) == 0){
 			printf("send process to background\n");
+			sendBack = true;	
 		}
 		else{
 			printf("%s\n", token);
@@ -103,27 +123,42 @@ void executeProg(char* token){
 		token = strtok(NULL, " ");
 	}
 	
-	ex = strtok(ex, "\n");
+	pid_t pid;
+	int i = 0;
+	for(i; i < execs; i++){	
+		progs[i] = strtok(progs[i], "\n");
+		
 
-	pid_t pid = fork();
-	if (pid==0){
-		printf("child executing\n");
-		char *cmd[]={ex, NULL};
+		if ((pid = fork()) ==0){
+			if (i % 2 == 0){
+				close(mypipe[0]);	
+			}
+			else{
+				close(mypipe[1]);
+			}
+			
 		
-		int val = execv(cmd[0],cmd);
-		if (val == -1){
-			printf("error with execv\n");
-			exit(1);
+			printf("child executing\n");
+			char *cmd[]={progs[i], NULL};
+			
+			int val = execv(cmd[0],cmd);
+			if (val == -1){
+				printf("error with execv\n");
+				exit(1);
+			}
+		}		
+		else if (pid > 0){
+			close (mypipe[0]);
+			close (mypipe[1]);
+			if (!sendBack){
+				printf("parent waiting for child\n");
+				waitpid(pid,0,0);
+				printf("parent done waiting\n");
+			}
 		}
-	}		
-	else if (pid > 0){
-		printf("parent waiting for child\n");
-		waitpid(pid,0,0);
-		printf("parent done waiting\n");
-		
-	}
-	else{
-		printf("error\n");
+		else{
+			printf("error\n");
+		}
 	}	
 
 }
