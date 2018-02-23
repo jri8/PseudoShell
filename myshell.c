@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <dirent.h>
+#include <errno.h>
 /*----------TO-DO-----------
 //finish execute program function so it works when passed in one program
 //implement functionality for history [offset] (should just call parse input)
@@ -15,6 +17,8 @@
 //add functionality for & and ;
 //error messages
 ------------TO-DO----------*/
+
+void changeDirectory(char*);
 
 const int MAX_HISTORY = 100;
 
@@ -151,8 +155,10 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
 	}
 	else if(strncmp(token, "cd", 1) == 0){
 		printf("input is cd\n");
-
-	}
+        char* directory = strtok(NULL, " ");
+        directory = strtok(directory, "\n");
+        changeDirectory(directory);
+    }
 	else if (strncmp(token, "exit", 3) != 0){
 		printf("input is not history, cd, or exit\n");	
 		executeProg(token);
@@ -165,6 +171,23 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
 //	printf("inside parse input \n");
 //	printf("%s\n", input);
 	return 0;
+}
+
+void changeDirectory(char* directory)
+{
+	//printf("this is the directory: %s", directory);
+    DIR* dir;
+    if ((dir = opendir(directory)) != NULL){
+        closedir(dir);
+        chdir(directory);
+    }
+    else if(ENOENT==errno)
+    {
+        printf("Directory '%s' does not exist\n", directory);
+    }
+    else{
+        printf("opendir() failed for some other reason\n");
+    }
 }
 
 int main(void){
