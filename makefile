@@ -3,5 +3,10 @@ P1: a
 a:
 	cc -o myshell myshell.c
 
+HW: 
+	cc -o helloWorld helloWorld.c
+
+PI:
+	cc -o printInput printInput.c
 
 	

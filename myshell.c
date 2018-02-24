@@ -22,7 +22,7 @@
 void changeDirectory(char*);
 bool isDirectory(char*);
 
-const int MAX_HISTORY = 10;
+const int MAX_HISTORY = 100;
 
 void historyController(char *history[], int *haddr, char* token, bool *waddr){
 	int histInd = (*haddr);
@@ -92,6 +92,10 @@ void executeProg(char* token){
 	//based upon extra parameters provide different functionality
 	
 	//basic framework of fork() from HW2, simpleProccess.c
+	while (token != NULL){
+		printf("%s passed into execute program\n", token);
+		token = strtok(NULL, " ");
+	}	
 	char *progs[100];
 	int execs = 0;
 	progs[execs] = malloc(strlen(token)+1);
@@ -128,7 +132,7 @@ void executeProg(char* token){
 		else if (strncmp(token, "<", 1) == 0){
 			printf("redirect in\n");
 		    
-        }
+        	}
 		else if (strncmp(token, ">", 1) == 0){
 			printf("redirect out\n");
 		}
@@ -153,14 +157,14 @@ void executeProg(char* token){
 				if (i == 0){
 					printf("i = %d\n", i);
 					printf("closing read pipe\n");
-					dup2(mypipe[1],1);
+					dup2(mypipe[1],STDOUT_FILENO);
 					close(mypipe[0]);	
 
 				}
 				else{	
 					printf("i = %d\n", i);
 					printf("closing write pipe\n");
-					dup2(mypipe[0], 0);
+					dup2(mypipe[0], STDIN_FILENO);
 					close(mypipe[1]);
 				}
 			}
@@ -205,9 +209,10 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
 //should return -1 if the input is exit which will trigger main to return 0
 //otherwise it will return 0 and 
 //history
-
-	token = strtok(input, " ");
-    struct stat sb;
+	printf("%s = input in parseInput\n", input);
+	token = input;
+	token = strtok(token, " ");
+    	struct stat sb;
 
 	if (strncmp(token, "history", 7)==0){
 		printf("input is history\n");
@@ -215,23 +220,25 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
 	}
 	else if(strncmp(token, "cd", 2) == 0){
 		printf("input is cd\n");
-        char* directory = strtok(NULL, " ");
-        directory = strtok(directory, "\n");
-        changeDirectory(directory);
-    }
+        	char* directory = strtok(NULL, " ");
+       		directory = strtok(directory, "\n");
+       		changeDirectory(directory);
+    	}
+
 	else if (strncmp(token, "exit", 4) != 0){
 		printf("input is not history, cd, or exit\n");
-        char* exec = strtok(token, "\n");
-        bool isFolder = false;
-        isFolder = isDirectory(token);
-		if(stat(exec,&sb)== 0 && sb.st_mode & S_IXUSR && isFolder == false)
-        {
-            printf("the file '%s' is an executable\n", token);
-            executeProg(token);
-        }
-        else{
-            printf("error: %s\n", "invalid input/not an executable");
-        }
+	       	executeProg(token);
+		/* char* exec = token; 
+		exec = strtok(exec, "\n");
+        	bool isFolder = false;
+        	isFolder = isDirectory(exec);
+		if(stat(exec,&sb)== 0 && sb.st_mode & S_IXUSR && isFolder == false) {
+            		printf("the file '%s' is an executable\n", token);
+            		executeProg(token);
+        	}
+        	else{
+            		printf("error: %s\n", "invalid input/not an executable");
+		}*/
 	}
 	else{
 		printf("input is exit\n");
