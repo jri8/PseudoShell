@@ -22,7 +22,7 @@
 void changeDirectory(char*);
 bool isDirectory(char*);
 
-const int MAX_HISTORY = 10;
+const int MAX_HISTORY = 100;
 
 void historyController(char *history[], int *haddr, char* token, bool *waddr){
 	int histInd = (*haddr);
@@ -221,17 +221,17 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
     }
 	else if (strncmp(token, "exit", 4) != 0){
 		printf("input is not history, cd, or exit\n");
-        char* exec = strtok(token, "\n");
-        bool isFolder = false;
-        isFolder = isDirectory(token);
-		if(stat(exec,&sb)== 0 && sb.st_mode & S_IXUSR && isFolder == false)
-        {
+        //char* exec = strtok(token, "\n");
+        //bool isFolder = false;
+        //isFolder = isDirectory(token);
+	    //if(stat(exec,&sb)== 0 && sb.st_mode & S_IXUSR && isFolder == false)
+        //{
             printf("the file '%s' is an executable\n", token);
             executeProg(token);
-        }
-        else{
-            printf("error: %s\n", "invalid input/not an executable");
-        }
+        //}
+        //else{
+        //    printf("error: %s\n", "invalid input/not an executable");
+        //}
 	}
 	else{
 		printf("input is exit\n");
