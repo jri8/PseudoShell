@@ -99,6 +99,7 @@ void executeProg(char* token){
 	execs++;
 	
 	bool sendBack = false;
+	bool piped = false;
 //	printf("in execProg\n");
 //	printf("%s\n", progs[0]);
 
@@ -115,6 +116,7 @@ void executeProg(char* token){
 			progs[execs] = malloc(strlen(token)+1);
 			progs[execs] = token;
 			execs++;
+			piped = true;
 		} 
 		else if(strncmp(token, ";", 1) == 0){
 //			printf("run second program\n");
@@ -147,13 +149,21 @@ void executeProg(char* token){
 		
 
 		if ((pid = fork()) ==0){
-			if (i % 2 == 0){
-				close(mypipe[0]);	
+			if (piped){
+				if (i == 0){
+					printf("i = %d\n", i);
+					printf("closing read pipe\n");
+					dup2(mypipe[1],1);
+					close(mypipe[0]);	
+
+				}
+				else{	
+					printf("i = %d\n", i);
+					printf("closing write pipe\n");
+					dup2(mypipe[0], 0);
+					close(mypipe[1]);
+				}
 			}
-			else{
-				close(mypipe[1]);
-			}
-			
 		
 			printf("child executing\n");
 			char *cmd[]={progs[i], NULL};
@@ -163,6 +173,7 @@ void executeProg(char* token){
 				printf("error: %s\n", "failed execution");
 				exit(1);
 			}
+			
 		}		
 		else if (pid > 0){
 			close (mypipe[0]);
