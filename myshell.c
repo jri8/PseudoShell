@@ -92,10 +92,7 @@ void executeProg(char* token){
 	//based upon extra parameters provide different functionality
 	
 	//basic framework of fork() from HW2, simpleProccess.c
-	while (token != NULL){
-		printf("%s passed into execute program\n", token);
-		token = strtok(NULL, " ");
-	}	
+	
 	char *progs[100];
 	int execs = 0;
 	progs[execs] = malloc(strlen(token)+1);
