@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 /*----------TO-DO-----------
 //finish execute program function so it works when passed in one program
 //implement functionality for history [offset] (should just call parse input)
@@ -94,6 +95,10 @@ void executeProg(char* token){
 	//basic framework of fork() from HW2, simpleProccess.c
 	
 	char *progs[100];
+	char *fname;
+	int fout, fin;
+	int saved_stdout = dup(1);
+	int saved_stdin = dup(0);
 	int execs = 0;
 	progs[execs] = malloc(strlen(token)+1);
 	progs[execs] = token;
@@ -128,10 +133,25 @@ void executeProg(char* token){
 		}
 		else if (strncmp(token, "<", 1) == 0){
 			printf("redirect in\n");
+			token = strtok(NULL, " " );
+			token = strtok(token, "\n");
+			fname = token;
+			fin = open(fname, O_RDONLY);
+			if(-1 == dup2(fin, 0))
+				printf("error with dup2\n");
+			printf("leaving < block \n");
 		    
         	}
 		else if (strncmp(token, ">", 1) == 0){
 			printf("redirect out\n");
+			token = strtok(NULL, " ");
+			token = strtok(token, "\n");
+			fname = token;
+			fout = open(fname, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+			if(-1 == dup2(fout, 1))
+				printf("error with dup2\n");
+			printf("leaving > block \n");
+			
 		}
 		else if (strncmp(token, "&", 1) == 0){
 			printf("send process to background\n");
@@ -140,6 +160,7 @@ void executeProg(char* token){
 		else{
 			printf("%s\n", token);
 		}
+		
 		token = strtok(NULL, " ");
 	}
 	
@@ -148,27 +169,28 @@ void executeProg(char* token){
 	for(i; i < execs; i++){	
 		progs[i] = strtok(progs[i], "\n");
 		
-
 		if ((pid = fork()) ==0){
 			if (piped){
 				if (i == 0){
 					printf("i = %d\n", i);
-					printf("closing read pipe\n");
-					dup2(mypipe[1],STDOUT_FILENO);
-					close(mypipe[0]);	
+					printf("redirecting output\n");
+					if (-1 == dup2(mypipe[1], 1))
+						printf("error w/ dup2\n");
+					close(mypipe[0]);
+					close(mypipe[1]);	
 
 				}
 				else{	
 					printf("i = %d\n", i);
-					printf("closing write pipe\n");
-					dup2(mypipe[0], STDIN_FILENO);
+					printf("redirecting input\n");
+					if (-1 == dup2(mypipe[0], 0))
+						printf("error w/ dup2\n");
 					close(mypipe[1]);
+					close(mypipe[0]);
 				}
 			}
 		
-			printf("child executing\n");
 			char *cmd[]={progs[i], NULL};
-			
 			int val = execv(cmd[0],cmd);
 			if (val == -1){
 				printf("error: %s\n", "failed execution");
@@ -180,15 +202,19 @@ void executeProg(char* token){
 			close (mypipe[0]);
 			close (mypipe[1]);
 			if (!sendBack){
-				printf("parent waiting for child\n");
+	//			printf("parent waiting for child\n");
 				waitpid(pid,0,0);
-				printf("parent done waiting\n");
+	//			printf("parent done waiting\n");
 			}
 		}
 		else{
 			printf("error: %s\n","unknown error");
 		}
-	}	
+	}
+	dup2(saved_stdout, 1);
+	dup2(saved_stdin, 0);
+	close(saved_stdout);
+	close(saved_stdin);	
 
 }
 
@@ -206,7 +232,7 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
 //should return -1 if the input is exit which will trigger main to return 0
 //otherwise it will return 0 and 
 //history
-	printf("%s = input in parseInput\n", input);
+	//printf("%s = input in parseInput\n", input);
 	token = input;
 	token = strtok(token, " ");
     	struct stat sb;
@@ -229,7 +255,7 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
         //isFolder = isDirectory(token);
 	    //if(stat(exec,&sb)== 0 && sb.st_mode & S_IXUSR && isFolder == false)
         //{
-            printf("the file '%s' is an executable\n", token);
+         //   printf("the file '%s' is an executable\n", token);
             executeProg(token);
         //}
         //else{
