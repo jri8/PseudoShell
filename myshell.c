@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
+#include <sys/stat.h>
 /*----------TO-DO-----------
 //finish execute program function so it works when passed in one program
 //implement functionality for history [offset] (should just call parse input)
@@ -19,8 +20,9 @@
 ------------TO-DO----------*/
 
 void changeDirectory(char*);
+bool isDirectory(char*);
 
-const int MAX_HISTORY = 100;
+const int MAX_HISTORY = 10;
 
 void historyController(char *history[], int *haddr, char* token, bool *waddr){
 	int histInd = (*haddr);
@@ -42,11 +44,22 @@ void historyController(char *history[], int *haddr, char* token, bool *waddr){
 		//executes command at target index from history
 		else if (isdigit(token[0])){
 			cmdInd = atoi(token);
-//			printf("executing history cmd: %d\n", cmdInd);
-		}
+            if (cmdInd > histInd && hasWrapped == false)
+                printf("error: %s\n", "offset is not valid");
+            else if(cmdInd < MAX_HISTORY && hasWrapped == true){
+                parseInput(history[(histInd+cmdInd-1)%MAX_HISTORY], history, haddr, token, waddr);
+            }
+            else {
+                printf("Command to be executed: %s", history[cmdInd]);
+			    printf("executing history cmd: %d\n", cmdInd);
+//                printf("token=%s", token);
+                parseInput(history[cmdInd],history,haddr,token,waddr);
+//              cancels carriage return when history prints again, needs to be fixed            
+            }
+        }
 		//not a valid modifier
 		else{
-			printf("not a valid modifier\n");
+			printf("error: %s\n", "not a valid modifier");
 		}		
 	}
 	//if not extra arguments print history		
@@ -91,7 +104,7 @@ void executeProg(char* token){
 
 	int mypipe[2];
 	if (pipe(mypipe)){
-		printf("pipe failed\n");
+		printf("error: %s\n", "pipe failed");
 	}	
 	
 	token = strtok(NULL, " ");
@@ -109,11 +122,11 @@ void executeProg(char* token){
 			progs[execs] = malloc(strlen(token)+1);
 			progs[execs] = token;
 			execs++;
-			
 		}
 		else if (strncmp(token, "<", 1) == 0){
-			printf("redirect in?\n");
-		}
+			printf("redirect in\n");
+		    
+        }
 		else if (strncmp(token, ">", 1) == 0){
 			printf("redirect out\n");
 		}
@@ -147,7 +160,7 @@ void executeProg(char* token){
 			
 			int val = execv(cmd[0],cmd);
 			if (val == -1){
-				printf("error with execv\n");
+				printf("error: %s\n", "failed execution");
 				exit(1);
 			}
 		}		
@@ -161,7 +174,7 @@ void executeProg(char* token){
 			}
 		}
 		else{
-			printf("error\n");
+			printf("error: %s\n","unknown error");
 		}
 	}	
 
@@ -183,20 +196,31 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
 //history
 
 	token = strtok(input, " ");
+    struct stat sb;
 
-	if (strncmp(token, "history", 6)==0){
+	if (strncmp(token, "history", 7)==0){
 		printf("input is history\n");
 		historyController(history, haddr, token, waddr);		
 	}
-	else if(strncmp(token, "cd", 1) == 0){
+	else if(strncmp(token, "cd", 2) == 0){
 		printf("input is cd\n");
         char* directory = strtok(NULL, " ");
         directory = strtok(directory, "\n");
         changeDirectory(directory);
     }
-	else if (strncmp(token, "exit", 3) != 0){
-		printf("input is not history, cd, or exit\n");	
-		executeProg(token);
+	else if (strncmp(token, "exit", 4) != 0){
+		printf("input is not history, cd, or exit\n");
+        char* exec = strtok(token, "\n");
+        bool isFolder = false;
+        isFolder = isDirectory(token);
+		if(stat(exec,&sb)== 0 && sb.st_mode & S_IXUSR && isFolder == false)
+        {
+            printf("the file '%s' is an executable\n", token);
+            executeProg(token);
+        }
+        else{
+            printf("error: %s\n", "invalid input/not an executable");
+        }
 	}
 	else{
 		printf("input is exit\n");
@@ -218,11 +242,30 @@ void changeDirectory(char* directory)
     }
     else if(ENOENT==errno)
     {
-        printf("Directory '%s' does not exist\n", directory);
+        printf("error: %s\n","Directory does not exist");
     }
     else{
-        printf("opendir() failed for some other reason\n");
+        printf("error: %s\n", "failed to open directory");
     }
+}
+
+bool isDirectory(char* directory)
+{
+    bool isDir = false;    
+    DIR* dir;
+    if ((dir = opendir(directory)) != NULL){
+        isDir = true;
+        closedir(dir);
+//        chdir(directory);
+    }
+    else if(ENOENT==errno)
+    {
+//        printf("error: %s\n","Directory does not exist");
+    }
+    else{
+//        printf("error: %s\n", "failed to open directory");
+    }
+    return isDir;
 }
 
 int main(void){
