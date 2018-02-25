@@ -158,7 +158,6 @@ void executeProg(char* token){
 		}
 		else{
 			printf("%s\n", token);
-            token = strtok(NULL, " ");
 		}
 		
 		token = strtok(NULL, " ");
