@@ -137,8 +137,8 @@ void executeProg(char* token){
 			token = strtok(token, "\n");
 			fname = token;
 			fin = open(fname, O_RDONLY);
-			if(-1 == dup2(fin, 0))
-				printf("error with dup2\n");
+			if(-1 == dup2(fin, 0)) 
+				printf("error: %s\n", "dup2() failed to execute");
 			printf("leaving < block \n");
 		    
         	}
@@ -149,7 +149,7 @@ void executeProg(char* token){
 			fname = token;
 			fout = open(fname, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
 			if(-1 == dup2(fout, 1))
-				printf("error with dup2\n");
+				printf("error: %s\n", "dup2() failed to execute");
 			printf("leaving > block \n");
 			
 		}
@@ -175,8 +175,8 @@ void executeProg(char* token){
 					printf("i = %d\n", i);
 					printf("redirecting output\n");
 					if (-1 == dup2(mypipe[1], 1))
-						printf("error w/ dup2\n");
-					close(mypipe[0]);
+						printf("error: %s\n", "dup2() failed to execute");
+                    close(mypipe[0]);
 					close(mypipe[1]);	
 
 				}
@@ -184,7 +184,7 @@ void executeProg(char* token){
 					printf("i = %d\n", i);
 					printf("redirecting input\n");
 					if (-1 == dup2(mypipe[0], 0))
-						printf("error w/ dup2\n");
+						printf("error: %s\n", "dup2() failed to execute");
 					close(mypipe[1]);
 					close(mypipe[0]);
 				}
@@ -193,7 +193,7 @@ void executeProg(char* token){
 			char *cmd[]={progs[i], NULL};
 			int val = execv(cmd[0],cmd);
 			if (val == -1){
-				printf("error: %s\n", "failed execution");
+				printf("error: %s\n", "failed execution w/ execv()");
 				exit(1);
 			}
 			

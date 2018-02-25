@@ -1,3 +1,2 @@
-this is a file used to test redirect in.
-Reading all lines in file
-blah
+leaving > block 
+hello world
