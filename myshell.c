@@ -14,7 +14,6 @@
 //finish execute program function so it works when passed in one program
 //implement functionality for history [offset] (should just call parse input)
 //manage stdin/out/err
-//add functionality for redirect
 //add functionality for pipes
 //add functionality for & and ;
 //error messages
@@ -172,21 +171,21 @@ void executeProg(char* token){
 		if ((pid = fork()) ==0){
 			if (piped){
 				if (i == 0){
+					printf("in first proc block\n");
 					printf("i = %d\n", i);
 					printf("redirecting output\n");
 					if (-1 == dup2(mypipe[1], 1))
 						printf("error w/ dup2\n");
 					close(mypipe[0]);
-					close(mypipe[1]);	
 
 				}
 				else{	
+					printf("in second proc block\n");
 					printf("i = %d\n", i);
 					printf("redirecting input\n");
 					if (-1 == dup2(mypipe[0], 0))
 						printf("error w/ dup2\n");
 					close(mypipe[1]);
-					close(mypipe[0]);
 				}
 			}
 		
@@ -199,12 +198,17 @@ void executeProg(char* token){
 			
 		}		
 		else if (pid > 0){
-			close (mypipe[0]);
-			close (mypipe[1]);
+			printf("in parent block\n");
+			if (i == execs-1){
+				printf("closing parent pipes\n");
+				close (mypipe[0]);
+				close (mypipe[1]);
+			}
+			
 			if (!sendBack){
-	//			printf("parent waiting for child\n");
+				//printf("parent waiting for child\n");
 				waitpid(pid,0,0);
-	//			printf("parent done waiting\n");
+			//	printf("parent done waiting\n");
 			}
 		}
 		else{
