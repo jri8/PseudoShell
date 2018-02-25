@@ -13,6 +13,7 @@
 /*----------TO-DO-----------
 //finish execute program function so it works when passed in one program
 //implement functionality for history [offset] (should just call parse input)
+//fix executable check
 //manage stdin/out/err
 //add functionality for pipes
 //add functionality for & and ;
@@ -94,7 +95,9 @@ void executeProg(char* token){
 	//basic framework of fork() from HW2, simpleProccess.c
 	
 	char *progs[100];
-	char *fname;
+	char *args[100][100];
+    int argcount = 0;
+    char *fname;
 	int fout, fin;
 	int saved_stdout = dup(1);
 	int saved_stdin = dup(0);
@@ -120,6 +123,7 @@ void executeProg(char* token){
 			token = strtok(NULL, " ");
 			progs[execs] = malloc(strlen(token)+1);
 			progs[execs] = token;
+            argcount = 0;
 			execs++;
 			piped = true;
 		} 
@@ -128,6 +132,7 @@ void executeProg(char* token){
 			token = strtok(NULL, " ");
 			progs[execs] = malloc(strlen(token)+1);
 			progs[execs] = token;
+            argcount = 0;
 			execs++;
 		}
 		else if (strncmp(token, "<", 1) == 0){
@@ -157,8 +162,13 @@ void executeProg(char* token){
 			sendBack = true;	
 		}
 		else{
-			printf("%s\n", token);
-            token = strtok(NULL, " ");
+			//printf("%s\n", token);
+            if (strchr(token, 10) != NULL)
+                token = strtok(token,"\n");
+            args[execs-1][argcount] = malloc(strlen(token)+1);
+            args[execs-1][argcount] = token;
+            printf("%s\n",args[execs-1][argcount]);
+            argcount++;
 		}
 		
 		token = strtok(NULL, " ");
@@ -189,9 +199,18 @@ void executeProg(char* token){
 					close(mypipe[1]);
 				}
 			}
-		
-			char *cmd[]={progs[i], NULL};
-			int val = execv(cmd[0],cmd);
+
+	        int g = 0;
+            char *cmd[100];
+            cmd[0] = progs[i];
+            printf("args[%d][%d]=%s\n",i,g,args[i][g]);
+            while(args[i][g] != NULL){
+                cmd[g+1] = args[i][g];
+                printf("cmd[g+1]=%s\n",cmd[g+1]);
+                g++;
+            }
+			cmd[g+1] = NULL;
+            int val = execv(cmd[0],cmd);
 			if (val == -1){
 				printf("error: %s\n", "failed execution w/ execv()");
 				exit(1);
