@@ -123,7 +123,7 @@ void executeProg(char* token){
 			token = strtok(NULL, " ");
 			progs[execs] = malloc(strlen(token)+1);
 			progs[execs] = token;
-            argcount = 0;
+            		argcount = 0;
 			execs++;
 			piped = true;
 		} 
@@ -190,7 +190,7 @@ void executeProg(char* token){
 					close(mypipe[0]);
 
 				}
-				else if (i > 0 && i < execs-1){	
+				else if (i == execs - 1){	
 					printf("in second proc block\n");
 					printf("i = %d\n", i);
 					printf("redirecting input\n");
@@ -199,21 +199,29 @@ void executeProg(char* token){
 					close(mypipe[1]);
 				}
 				else{
-
+					printf("in third proc block\n");
+					printf("i = %d\n", i);
+					printf("redirecting input\n");
+					if (-1 == dup2(mypipe[0], 0))
+						printf("error: %s\n", "dup2() failed to execute");
+					printf("redirecting output\n");
+					if (-1 == dup2(mypipe[1], 1))
+						printf("error: %s\n", "dup2() failed to execute");
+					
 				}
 			}
 
-	        int g = 0;
+	    int g = 0;
             char *cmd[100];
             cmd[0] = progs[i];
-            printf("args[%d][%d]=%s\n",i,g,args[i][g]);
+//            printf("args[%d][%d]=%s\n",i,g,args[i][g]);
             while(args[i][g] != NULL){
                 cmd[g+1] = args[i][g];
-                printf("cmd[g+1]=%s\n",cmd[g+1]);
+//                printf("cmd[g+1]=%s\n",cmd[g+1]);
                 g++;
             }
 			cmd[g+1] = NULL;
-            int val = execv(cmd[0],cmd);
+            		int val = execv(cmd[0],cmd);
 			if (val == -1){
 				printf("error: %s\n", "failed execution w/ execv()");
 				exit(1);
@@ -238,6 +246,8 @@ void executeProg(char* token){
 			printf("error: %s\n","unknown error");
 		}
 	}
+	close(mypipe[0]);
+	close(mypipe[1]);
 	dup2(saved_stdout, 1);
 	dup2(saved_stdin, 0);
 	close(saved_stdout);
