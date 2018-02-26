@@ -11,20 +11,18 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 /*----------TO-DO-----------
-//finish execute program function so it works when passed in one program
-//implement functionality for history [offset] (should just call parse input)
-//fix executable check
-//manage stdin/out/err
-//add functionality for pipes
-//add functionality for & and ;
-//error messages
 ------------TO-DO----------*/
 
 void changeDirectory(char*);
 bool isDirectory(char*);
 
+//constant for size of history
 const int MAX_HISTORY = 100;
 
+//manages history calls.
+//if no modifier: print history
+//if -c modifier: clear history
+//if [int] modifier: call parseInput on command from  that index in history
 void historyController(char *history[], int *haddr, char* token, bool *waddr){
 	int histInd = (*haddr);
 	int cmdInd;
@@ -95,6 +93,7 @@ void executeProg(char* token){
 	//based upon extra parameters provide different functionality
 	
 	//basic framework of fork() from HW2, simpleProccess.c
+	
 	
 	char *progs[100];
 	char *args[100][100];
@@ -198,6 +197,9 @@ void executeProg(char* token){
 
 
 		if ((pid = fork()) ==0){
+			if (sendBack){
+				setpgid(0,0);
+			}
 			if (piped){
 				if (i >= 0 && i < execs-1){
 /*					printf("i = %d\n", i);
@@ -220,20 +222,6 @@ void executeProg(char* token){
 					close(mypipe[0]);
 					close(mypipe[1]);
 				}
-			/*	else{
-					printf("in third proc block\n");
-					printf("i = %d\n", i);
-					printf("redirecting input\n");
-					printf("mypipeIn = %d\n", mypipeIn);
-					if (-1 == dup2(mypipe[mypipeIn], 0))
-						printf("error: %s\n", "dup2() failed to execute");
-					printf("redirecting output\n");
-					printf("mypipeOut = %d\n", mypipeOut);
-
-					if (-1 == dup2(mypipe[mypipeOut], 1))
-						printf("error: %s\n", "dup2() failed to execute");
-					
-				}*/
 			}
 
 			int g = 0;
@@ -271,6 +259,9 @@ void executeProg(char* token){
 				while (waitpid(0,0,0) <= 0);
 //				printf("parent done waiting\n");
 			}
+			if (sendBack)
+				printf("process sent background\n");
+				sendBack = false;
 		}
 		else{
 			printf("error: %s\n","unknown error");
