@@ -45,19 +45,21 @@ void historyController(char *history[], int *haddr, char* token, bool *waddr){
 		//executes command at target index from history
 		else if (isdigit(token[0])){
 			cmdInd = atoi(token);
-            if (cmdInd > histInd && hasWrapped == false)
-                printf("error: %s\n", "offset is not valid");
-            else if(cmdInd < MAX_HISTORY && hasWrapped == true){
-                parseInput(history[(histInd+cmdInd-1)%MAX_HISTORY], history, haddr, token, waddr);
-            }
-            else {
-                printf("Command to be executed: %s", history[cmdInd]);
-			    printf("executing history cmd: %d\n", cmdInd);
-//                printf("token=%s", token);
-                parseInput(history[cmdInd],history,haddr,token,waddr);
+			
+			if (cmdInd > histInd && hasWrapped == false)
+				printf("error: %s\n", "offset is not valid");
+
+			else if(cmdInd < MAX_HISTORY && hasWrapped == true){
+				parseInput(history[(histInd+cmdInd-1)%MAX_HISTORY], history, haddr, token, waddr);
+           		 }
+
+            		else {
+				printf("Command to be executed: %s", history[cmdInd]);
+			    	printf("executing history cmd: %d\n", cmdInd);
+			    	parseInput(history[cmdInd],history,haddr,token,waddr);
 //              cancels carriage return when history prints again, needs to be fixed            
-            }
-        }
+           		 }		
+        	}
 		//not a valid modifier
 		else{
 			printf("error: %s\n", "not a valid modifier");
@@ -137,7 +139,7 @@ void executeProg(char* token){
 			execs++;
 		}
 		else if (strncmp(token, "<", 1) == 0){
-			printf("redirect in\n");
+//			printf("redirect in\n");
 			token = strtok(NULL, " " );
 			if (strchr(token, 10) != NULL)
 				token = strtok(token, "\n");
@@ -145,11 +147,10 @@ void executeProg(char* token){
 			fin = open(fname, O_RDONLY);
 			if(-1 == dup2(fin, 0)) 
 				printf("error: %s\n", "dup2() failed to execute");
-			printf("leaving < block \n");
 		    
         	}
 		else if (strncmp(token, ">", 1) == 0){
-			printf("redirect out\n");
+//			printf("redirect out\n");
 			token = strtok(NULL, " ");
 			if (strchr(token, 10) != NULL)
 				token = strtok(token, "\n");
@@ -157,11 +158,9 @@ void executeProg(char* token){
 			fout = open(fname, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
 			if(-1 == dup2(fout, 1))
 				printf("error: %s\n", "dup2() failed to execute");
-			printf("leaving > block \n");
-			
 		}
 		else if (strncmp(token, "&", 1) == 0){
-			printf("send process to background\n");
+//			printf("send process to background\n");
 			sendBack = true;	
 		}
 		else{
@@ -170,7 +169,7 @@ void executeProg(char* token){
 				token = strtok(token,"\n");
 			args[execs-1][argcount] = malloc(strlen(token)+1);
 			args[execs-1][argcount] = token;
-			printf("%s\n",args[execs-1][argcount]);
+//			printf("%s\n",args[execs-1][argcount]);
 			argcount++;
 		}
 		
@@ -185,7 +184,7 @@ void executeProg(char* token){
 	int i = 0;
 	int mypipeIn = 0;
 	int mypipeOut = 1;
-	printf("execs = %d\n", execs);
+//	printf("execs = %d\n", execs);
 	for(i; i < execs; i++){	
 		if (strchr(progs[i], 10) != NULL)
 			progs[i] = strtok(progs[i], "\n");
@@ -249,7 +248,7 @@ void executeProg(char* token){
 //			printf("executing %s\n", cmd[0]);
             		int val = execv(cmd[0],cmd);
 			if (val == -1){
-				printf("error: %s\n", "failed execution w/ execv()");
+				printf("error: \"%s\" %s\n", cmd[0], "is not a valid executable");
 				exit(1);
 			}
 			
@@ -309,18 +308,18 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
     	struct stat sb;
 
 	if (strncmp(token, "history", 7)==0){
-		printf("input is history\n");
+//		printf("input is history\n");
 		historyController(history, haddr, token, waddr);		
 	}
 	else if(strncmp(token, "cd", 2) == 0){
-		printf("input is cd\n");
+//		printf("input is cd\n");
         	char* directory = strtok(NULL, " ");
        		directory = strtok(directory, "\n");
        		changeDirectory(directory);
     	}
 
 	else if (strncmp(token, "exit", 4) != 0){
-		printf("input is not history, cd, or exit\n");
+//		printf("input is not history, cd, or exit\n");
         //char* exec = strtok(token, "\n");
         //bool isFolder = false;
         //isFolder = isDirectory(token);
