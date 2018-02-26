@@ -1,4 +1,4 @@
-//main file for Pseudo Shell
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -40,19 +40,21 @@ void historyController(char *history[], int *haddr, char* token, bool *waddr){
 		//executes command at target index from history
 		else if (isdigit(token[0])){
 			cmdInd = atoi(token);
-            if (cmdInd > histInd && hasWrapped == false)
-                printf("error: %s\n", "offset is not valid");
-            else if(cmdInd < MAX_HISTORY && hasWrapped == true){
-                parseInput(history[(histInd+cmdInd-1)%MAX_HISTORY], history, haddr, token, waddr);
-            }
-            else {
-                printf("Command to be executed: %s", history[cmdInd]);
-			    printf("executing history cmd: %d\n", cmdInd);
-//                printf("token=%s", token);
-                parseInput(history[cmdInd],history,haddr,token,waddr);
+			
+			if (cmdInd > histInd && hasWrapped == false)
+				printf("error: %s\n", "offset is not valid");
+
+			else if(cmdInd < MAX_HISTORY && hasWrapped == true){
+				parseInput(history[(histInd+cmdInd-1)%MAX_HISTORY], history, haddr, token, waddr);
+           		 }
+
+            		else {
+				printf("Command to be executed: %s", history[cmdInd]);
+			    	printf("executing history cmd: %d\n", cmdInd);
+			    	parseInput(history[cmdInd],history,haddr,token,waddr);
 //              cancels carriage return when history prints again, needs to be fixed            
-            }
-        }
+           		 }		
+        	}
 		//not a valid modifier
 		else{
 			printf("error: %s\n", "not a valid modifier");
@@ -91,8 +93,8 @@ void executeProg(char* token){
 	
 	char *progs[100];
 	char *args[100][100];
-    int argcount = 0;
-    char *fname;
+    	int argcount = 0;
+    	char *fname;
 	int fout, fin;
 	int saved_stdout = dup(1);
 	int saved_stdin = dup(0);
@@ -103,19 +105,20 @@ void executeProg(char* token){
 	
 	bool sendBack = false;
 	bool piped = false;
+	int pipecount = 0;
 //	printf("in execProg\n");
 //	printf("%s\n", progs[0]);
 
-	int mypipe[2];
-	if (pipe(mypipe)){
-		printf("error: %s\n", "pipe failed");
-	}	
+		
 	
 	token = strtok(NULL, " ");
 	while (token != NULL){
 		if(strncmp(token, "|", 1) == 0){
-			printf("pipe\n");
+			pipecount++;
+	//		printf("pipe\n");
 			token = strtok(NULL, " ");
+			if (strchr(token, 10) != NULL)
+				token = strtok(token, "\n");
 			progs[execs] = malloc(strlen(token)+1);
 			progs[execs] = token;
             		argcount = 0;
@@ -127,33 +130,32 @@ void executeProg(char* token){
 			token = strtok(NULL, " ");
 			progs[execs] = malloc(strlen(token)+1);
 			progs[execs] = token;
-            argcount = 0;
+			argcount = 0;
 			execs++;
 		}
 		else if (strncmp(token, "<", 1) == 0){
-			printf("redirect in\n");
+//			printf("redirect in\n");
 			token = strtok(NULL, " " );
-			token = strtok(token, "\n");
+			if (strchr(token, 10) != NULL)
+				token = strtok(token, "\n");
 			fname = token;
 			fin = open(fname, O_RDONLY);
 			if(-1 == dup2(fin, 0)) 
 				printf("error: %s\n", "dup2() failed to execute");
-			printf("leaving < block \n");
 		    
         	}
 		else if (strncmp(token, ">", 1) == 0){
-			printf("redirect out\n");
+//			printf("redirect out\n");
 			token = strtok(NULL, " ");
-			token = strtok(token, "\n");
+			if (strchr(token, 10) != NULL)
+				token = strtok(token, "\n");
 			fname = token;
 			fout = open(fname, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
 			if(-1 == dup2(fout, 1))
 				printf("error: %s\n", "dup2() failed to execute");
-			printf("leaving > block \n");
-			
 		}
 		else if (strncmp(token, "&", 1) == 0){
-			printf("send process to background\n");
+//			printf("send process to background\n");
 			sendBack = true;	
 		}
 		else{
@@ -162,86 +164,116 @@ void executeProg(char* token){
 				token = strtok(token,"\n");
 			args[execs-1][argcount] = malloc(strlen(token)+1);
 			args[execs-1][argcount] = token;
-			printf("%s\n",args[execs-1][argcount]);
+//			printf("%s\n",args[execs-1][argcount]);
 			argcount++;
 		}
 		
 		token = strtok(NULL, " ");
 	}
-	
+
+	int mypipe[2];
+	if (pipe(mypipe))
+		printf("error: %s\n", "pipe failed");
+	int mynewpipe[2];
 	pid_t pid;
 	int i = 0;
+	int mypipeIn = 0;
+	int mypipeOut = 1;
+//	printf("execs = %d\n", execs);
 	for(i; i < execs; i++){	
-		progs[i] = strtok(progs[i], "\n");
+		if (strchr(progs[i], 10) != NULL)
+			progs[i] = strtok(progs[i], "\n");
 		
+		if (i >= 0 && i < execs-1){
+//			printf("piping mynewpipe\n");
+			if (pipe(mynewpipe)){
+				printf("error: %s\n", "pipe failed");
+			}
+		}
+
+
 		if ((pid = fork()) ==0){
 			if (piped){
-				if (i == 0){
-					printf("in first proc block\n");
-					printf("i = %d\n", i);
-					printf("redirecting output\n");
-					if (-1 == dup2(mypipe[1], 1))
-					    printf("error: %s\n", "dup2() failed to execute");
-					close(mypipe[0]);
+				if (i >= 0 && i < execs-1){
+/*					printf("i = %d\n", i);
+					printf("there are next commands\n");
+					printf("redirecting output to mynewpipe[1]\n");*/
+					close(mynewpipe[0]);
+					if (-1 == dup2(mynewpipe[1], 1))
+						printf("error: %s\n", "dup2() failed to execute");
+					close(mynewpipe[1]);
 				}
-				else if (i == execs - 1){	
-					printf("in second proc block\n");
-					printf("i = %d\n", i);
-					printf("redirecting input\n");
+				if (i < execs && i > 0){	
+/*					printf("i = %d\n", i);
+					printf("there are previous commands\n");
+					printf("redirecting input to mypipe [0]\n");*/
+//					printf("mypipeIn = %d\n", mypipeIn);k
+					
 					if (-1 == dup2(mypipe[0], 0))
 						printf("error: %s\n", "dup2() failed to execute");
+					close(mypipe[0]);
 					close(mypipe[1]);
-				    dup2(saved_stdout,1);
                 }
-				else{
+			/*	else{
 					printf("in third proc block\n");
 					printf("i = %d\n", i);
 					printf("redirecting input\n");
-					if (-1 == dup2(mypipe[0], 0))
+					printf("mypipeIn = %d\n", mypipeIn);
+					if (-1 == dup2(mypipe[mypipeIn], 0))
 						printf("error: %s\n", "dup2() failed to execute");
 					printf("redirecting output\n");
-					if (-1 == dup2(mypipe[1], 1))
+					printf("mypipeOut = %d\n", mypipeOut);
+
+					if (-1 == dup2(mypipe[mypipeOut], 1))
 						printf("error: %s\n", "dup2() failed to execute");
-				}
+                        */
 			}
 
-	        int g = 0;
-            char *cmd[100];
-            cmd[0] = progs[i];
-//            printf("args[%d][%d]=%s\n",i,g,args[i][g]);
-            while(args[i][g] != NULL){
-                cmd[g+1] = args[i][g];
-//                printf("cmd[g+1]=%s\n",cmd[g+1]);
-                g++;
-            }
+			int g = 0;
+			char *cmd[100];
+			cmd[0] = progs[i];
+			while(args[i][g] != NULL){
+				cmd[g+1] = args[i][g];
+				g++;
+			}
+
 			cmd[g+1] = NULL;
-            int val = execv(cmd[0],cmd);
+//			printf("executing %s\n", cmd[0]);
+            int val = execvp(cmd[0],cmd);
 			if (val == -1){
-				printf("error: %s\n", "failed execution w/ execv()");
+				printf("error: \"%s\" %s\n", cmd[0], "is not a valid executable");
 				exit(1);
 			}
 			
 		}		
 		else if (pid > 0){
-			printf("in parent block\n");
-			if (i == execs-1){
-				printf("closing parent pipes\n");
+	//		printf("in parent block\n");
+			if (i < execs && i > 0){
+	//			printf("closing mypipe %d, and mypipe %d\n",0,1);
 				close (mypipe[0]);
 				close (mypipe[1]);
 			}
+			if ( i >= 0 && i < execs-1){
+//				printf("copying mynewpipe to mypipe\n");
+				memcpy(mypipe, mynewpipe, sizeof(mypipe));
+			}
+
 			
 			if (!sendBack){
-				//printf("parent waiting for child\n");
-				waitpid(pid,0,0);
-			//	printf("parent done waiting\n");
+//				printf("paret waiting for child\n");
+				while (waitpid(0,0,0) <= 0);
+//				printf("parent done waiting\n");
 			}
 		}
 		else{
 			printf("error: %s\n","unknown error");
 		}
 	}
+
 	close(mypipe[0]);
 	close(mypipe[1]);
+	close(mynewpipe[0]);
+	close(mynewpipe[1]);
 	dup2(saved_stdout, 1);
 	dup2(saved_stdin, 0);
 	close(saved_stdout);
@@ -269,18 +301,18 @@ int parseInput(char *input, char *history[], int *haddr, char* token, bool *wadd
     	struct stat sb;
 
 	if (strncmp(token, "history", 7)==0){
-		printf("input is history\n");
+//		printf("input is history\n");
 		historyController(history, haddr, token, waddr);		
 	}
 	else if(strncmp(token, "cd", 2) == 0){
-		printf("input is cd\n");
+//		printf("input is cd\n");
         	char* directory = strtok(NULL, " ");
        		directory = strtok(directory, "\n");
        		changeDirectory(directory);
     	}
 
 	else if (strncmp(token, "exit", 4) != 0){
-		printf("input is not history, cd, or exit\n");
+//		printf("input is not history, cd, or exit\n");
         //char* exec = strtok(token, "\n");
         //bool isFolder = false;
         //isFolder = isDirectory(token);

@@ -2,13 +2,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
-
 int main(){
 
 	pid_t pid = getpid();
-	printf("printInput has process id: %d\n", pid);
-	printf("the following is read from stdin by printInput\n");
-	printf("------------------------------------------------\n");
+	printf("printMidde has process id: %d\n",pid);
 	int c;
 	FILE* stream = fdopen(0, "r");
 	while ((c = fgetc (stream)) != EOF)
