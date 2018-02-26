@@ -246,7 +246,7 @@ void executeProg(char* token){
 
 			cmd[g+1] = NULL;
 //			printf("executing %s\n", cmd[0]);
-            		int val = execv(cmd[0],cmd);
+            		int val = execvp(cmd[0],cmd);
 			if (val == -1){
 				printf("error: \"%s\" %s\n", cmd[0], "is not a valid executable");
 				exit(1);

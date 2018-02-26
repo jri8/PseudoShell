@@ -1,12 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 int main(){
-/*	char buf[2048];
-	fgets(buf, sizeof buf, stdin);
-	printf("%s\n", buf);	
-*/	
-	printf("this is the last file\n");
+
+	pid_t pid = getpid();
+	printf("printInput has process id: %d\n", pid);
+	printf("the following is read from stdin by printInput\n");
+	printf("------------------------------------------------\n");
 	int c;
 	FILE* stream = fdopen(0, "r");
 	while ((c = fgetc (stream)) != EOF)
