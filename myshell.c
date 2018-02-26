@@ -11,13 +11,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 /*----------TO-DO-----------
-//finish execute program function so it works when passed in one program
-//implement functionality for history [offset] (should just call parse input)
 //fix executable check
-//manage stdin/out/err
-//add functionality for pipes
-//add functionality for & and ;
-//error messages
+//implement functionality for multiple pipes
 ------------TO-DO----------*/
 
 void changeDirectory(char*);
@@ -186,9 +181,8 @@ void executeProg(char* token){
 					printf("i = %d\n", i);
 					printf("redirecting output\n");
 					if (-1 == dup2(mypipe[1], 1))
-					printf("error: %s\n", "dup2() failed to execute");
+					    printf("error: %s\n", "dup2() failed to execute");
 					close(mypipe[0]);
-
 				}
 				else if (i == execs - 1){	
 					printf("in second proc block\n");
@@ -197,7 +191,8 @@ void executeProg(char* token){
 					if (-1 == dup2(mypipe[0], 0))
 						printf("error: %s\n", "dup2() failed to execute");
 					close(mypipe[1]);
-				}
+				    dup2(saved_stdout,1);
+                }
 				else{
 					printf("in third proc block\n");
 					printf("i = %d\n", i);
@@ -207,11 +202,10 @@ void executeProg(char* token){
 					printf("redirecting output\n");
 					if (-1 == dup2(mypipe[1], 1))
 						printf("error: %s\n", "dup2() failed to execute");
-					
 				}
 			}
 
-	    int g = 0;
+	        int g = 0;
             char *cmd[100];
             cmd[0] = progs[i];
 //            printf("args[%d][%d]=%s\n",i,g,args[i][g]);
@@ -221,7 +215,7 @@ void executeProg(char* token){
                 g++;
             }
 			cmd[g+1] = NULL;
-            		int val = execv(cmd[0],cmd);
+            int val = execv(cmd[0],cmd);
 			if (val == -1){
 				printf("error: %s\n", "failed execution w/ execv()");
 				exit(1);
