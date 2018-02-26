@@ -209,7 +209,6 @@ void executeProg(char* token){
 					if (-1 == dup2(mynewpipe[1], 1))
 						printf("error: %s\n", "dup2() failed to execute");
 					close(mynewpipe[1]);
-
 				}
 				if (i < execs && i > 0){	
 /*					printf("i = %d\n", i);
@@ -234,7 +233,7 @@ void executeProg(char* token){
 
 			cmd[g+1] = NULL;
 //			printf("executing %s\n", cmd[0]);
-            		int val = execvp(cmd[0],cmd);
+            int val = execvp(cmd[0],cmd);
 			if (val == -1){
 				printf("error: \"%s\" %s\n", cmd[0], "is not a valid executable");
 				exit(1);
