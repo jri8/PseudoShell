@@ -6,6 +6,7 @@ int main(){
 	fgets(buf, sizeof buf, stdin);
 	printf("%s\n", buf);	
 */	
+	printf("this is the last file\n");
 	int c;
 	FILE* stream = fdopen(0, "r");
 	while ((c = fgetc (stream)) != EOF)

@@ -9,4 +9,5 @@ HW:
 PI:
 	cc -o printInput printInput.c
 
-	
+PM:
+	cc -o printMiddle printMiddle.c

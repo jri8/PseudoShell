@@ -1,13 +1,35 @@
 leaving > block 
+execs = 3
+piping mynewpipe
 in parent block
-in first proc block
+copying mynewpipe to mypipe
+paret waiting for child
 i = 0
-redirecting output
+there are next commands
+redirecting output to mynewpipe[1]
+parent done waiting
+piping mynewpipe
 in parent block
-closing parent pipes
-in second proc block
+closing mypipe 0, and mypipe 1
+copying mynewpipe to mypipe
+paret waiting for child
 i = 1
-redirecting input
-args[1][0]=(null)
-args[0][0]=(null)
+there are next commands
+redirecting output to mynewpipe[1]
+parent done waiting
+in parent block
+closing mypipe 0, and mypipe 1
+paret waiting for child
+i = 2
+there are previous commands
+redirecting input to mypipe [0]
+executing printInput
+this is the last file
+i = 1
+there are previous commands
+redirecting input to mypipe [0]
+executing printMiddle
+this is the middle file
+executing helloWorld
 hello world
+parent done waiting
