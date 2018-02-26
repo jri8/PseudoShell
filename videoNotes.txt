@@ -1,0 +1,21 @@
+run ./helloWorld 1
+show history
+run cmd from history
+clear history and show
+chagne directory (show with pwd)
+exit
+
+1 pipe: ./helloWorld 1 | ./printInput
+2 pipes: ./helloWorld 1 | ./printInput | ./printInput
+
+running multiple progs: ./helloWorld 2 ; ./helloWorld 3
+
+redirect out: ./helloWorld 2 > out.txt
+redirect in: ./printInput < out.txt
+
+send to background: ./helloWorld &
+
+ls -la /home/osboxes
+gcc -g /home/osboxes/helloWorld.c -o /home/osboxes/helloWorld
+cat helloWorld.c | nl | more
+
